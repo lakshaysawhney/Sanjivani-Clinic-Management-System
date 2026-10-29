@@ -32,6 +32,7 @@ jobs:
       - run: pip install -r backend/requirements.txt
       - run: ruff check backend scripts
       - run: ruff format --check backend scripts
+      - run: python backend/manage.py check
       - run: python backend/manage.py makemigrations --check --dry-run
       - run: pytest -q
         working-directory: backend
