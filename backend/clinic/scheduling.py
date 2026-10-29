@@ -32,6 +32,12 @@ def snapshot(session):
 
 
 def sync_reservations(session):
+    """Reserve each active resource once, including providers shared by a group.
+
+    Database uniqueness is essential: two transactions can both observe a free
+    slot before either commits. A conflicting insert rolls back the whole save,
+    while cancelled participation remains in history without reserving the child.
+    """
     ProviderReservation.objects.filter(session=session).delete()
     PatientReservation.objects.filter(session=session).delete()
     active = session.participations.exclude(status="Cancelled")

@@ -20,7 +20,13 @@ def refresh_dues(patient):
 
 
 def reconcile_charge(part, actor=None):
-    # Caller owns the session lock and locks affected patients in ascending ID order.
+    """Append corrections for one child's participation, including shared groups.
+
+    Callers hold the session lock and patient locks in ascending ID order. Billed
+    state and revision source keys make retries no-ops; immutable reversal rows
+    preserve the original charge and prevent any charge being reversed twice.
+    Provider count never multiplies the charge for a completed child.
+    """
     desired = 0
     if part.status == "Completed" and str(part.session.schedule.date) >= settings.ACCOUNTING_START_DATE:
         if part.fee_snapshot is None or part.fee_therapy_id != part.session.therapy_id:
@@ -31,9 +37,9 @@ def reconcile_charge(part, actor=None):
         part.billing_revision += 1
         prefix = f"participation:{part.pk}:{part.billing_revision}"
         if part.billed_paise:
-            original = (
-                LedgerEntry.objects.filter(participation=part, kind="charge").order_by("-created_at").first()
-            )
+            # Timestamps can tie or move backwards. The unreversed charge is the
+            # accounting source of truth, independent of wall-clock/UUID order.
+            original = LedgerEntry.objects.get(participation=part, kind="charge", reversal__isnull=True)
             LedgerEntry.objects.create(
                 patient=part.patient,
                 amount_paise=part.billed_paise,
