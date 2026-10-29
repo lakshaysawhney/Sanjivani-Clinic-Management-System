@@ -3,6 +3,12 @@ from accounts.models import User, Provider
 from clinic.models import Patient, Therapy
 
 
+@pytest.fixture(autouse=True)
+def synthetic_password_hashing(settings):
+    # Only synthetic test users use this hasher; runtime settings remain secure.
+    settings.PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+
+
 @pytest.fixture
 def team(db):
     users = {}

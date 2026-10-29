@@ -24,6 +24,11 @@ def month_floor(day, back=0):
 
 
 def history_scope(user, day):
+    """Apply calendar-month limits before API lists, details and aggregates.
+
+    Therapist ownership is also filtered by each endpoint; permitted completed
+    history does not extend the separate daily publication visibility window.
+    """
     back = 1 if user.role == "THERAPIST" else 2
     if user.role != "ADMIN" and day < month_floor(now().date(), back):
         raise PermissionDenied("This date is outside your permitted history window.")

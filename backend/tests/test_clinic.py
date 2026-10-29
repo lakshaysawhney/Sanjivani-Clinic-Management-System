@@ -28,8 +28,20 @@ from accounts.models import User
 pytestmark = pytest.mark.django_db
 
 
+@pytest.fixture(autouse=True)
+def proxy_settings(settings):
+    # pytest disables DEBUG, so API tests must model the trusted edge proxy.
+    # Keep the production boundary active instead of bypassing it in tests.
+    settings.PROXY_SECRET = "synthetic-test-proxy"
+    settings.SECURE_SSL_REDIRECT = False
+
+
+def api_client(**kwargs):
+    return APIClient(HTTP_X_CLINIC_PROXY="synthetic-test-proxy", **kwargs)
+
+
 def client_for(user):
-    client = APIClient()
+    client = api_client()
     client.force_authenticate(user)
     return client
 
@@ -244,7 +256,7 @@ def test_calendar_history(team, role, day, allowed):
 @freeze_time("2026-10-28 12:00:00+05:30")
 def test_therapist_forbidden_apis(team, path):
     assert client_for(team["one"]).get("/api/" + path).status_code == 403
-    assert APIClient().get("/api/" + path).status_code == 403
+    assert api_client().get("/api/" + path).status_code == 403
 
 
 def test_publication_ownership_expiry_and_payload(team, booking):
@@ -334,7 +346,7 @@ def test_idempotency_and_staff_boundaries(team, booking):
 
 
 def test_csrf_and_deactivation(team):
-    client = APIClient(enforce_csrf_checks=True)
+    client = api_client(enforce_csrf_checks=True)
     body = {"username": "one", "password": "Synthetic-only-Password-482!"}
     assert client.post("/api/auth/login/", body).status_code == 403
     token = client.get("/api/auth/csrf/").data["csrfToken"]
@@ -389,7 +401,7 @@ def test_outbox_success_and_uncertain(team):
 
 @override_settings(MAINTENANCE_SECRET="synthetic-maintenance-secret")
 def test_protected_maintenance():
-    client = APIClient()
+    client = api_client()
     assert client.post("/api/maintenance/").status_code == 403
     assert (
         client.post("/api/maintenance/", HTTP_AUTHORIZATION="Bearer synthetic-maintenance-secret").status_code
