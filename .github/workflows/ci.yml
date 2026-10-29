@@ -21,6 +21,7 @@ jobs:
       DJANGO_SECRET_KEY: synthetic-ci-key-never-for-production
       DATABASE_URL: postgresql://clinic:synthetic-ci-only@localhost:5432/clinic_dev
       ACCOUNTING_START_DATE: '2026-10-01'
+      APP_ORIGIN: 'http://127.0.0.1:5173'
       E2E_PASSWORD: synthetic-browser-only-Password-482!
     steps:
       - uses: actions/checkout@v4

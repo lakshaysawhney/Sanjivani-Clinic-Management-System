@@ -34,6 +34,28 @@ def test_proxy_requires_configured_secret(settings):
     assert response.status_code == 403
 
 
+@pytest.mark.parametrize(
+    "origin,expected_status",
+    [
+        ("http://127.0.0.1:5173", 200),
+        ("http://localhost:5173", 403),
+        ("https://untrusted.example.test", 403),
+    ],
+)
+def test_login_csrf_requires_the_configured_browser_origin(team, settings, origin, expected_status):
+    settings.CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:5173"]
+    client = APIClient(enforce_csrf_checks=True, HTTP_X_CLINIC_PROXY="synthetic-test-proxy")
+    token = client.get("/api/auth/csrf/").json()["csrfToken"]
+    response = client.post(
+        "/api/auth/login/",
+        {"username": "reception", "password": "Synthetic-only-Password-482!"},
+        HTTP_X_CSRFTOKEN=token,
+        HTTP_ORIGIN=origin,
+    )
+    assert response.status_code == expected_status
+    assert client.get("/api/auth/me/").status_code == (200 if expected_status == 200 else 403)
+
+
 @freeze_time("2026-10-28 09:00:00+05:30")
 def test_trusted_proxy_preserves_session_csrf_and_deactivation(team, booking):
     client = APIClient(enforce_csrf_checks=True, HTTP_X_CLINIC_PROXY="synthetic-test-proxy")
