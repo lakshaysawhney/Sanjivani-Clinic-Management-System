@@ -1,0 +1,36 @@
+from django.urls import path
+from accounts import views as auth
+from clinic import api
+
+urlpatterns = [
+    path("api/health/", api.HealthView.as_view()),
+    path("api/maintenance/", api.MaintenanceView.as_view()),
+    path("api/auth/csrf/", auth.CSRFView.as_view()),
+    path("api/auth/login/", auth.LoginView.as_view()),
+    path("api/auth/logout/", auth.LogoutView.as_view()),
+    path("api/auth/me/", auth.MeView.as_view()),
+    path("api/auth/password/", auth.PasswordView.as_view()),
+    path("api/auth/activate/", auth.ActivationView.as_view()),
+    path("api/auth/reset/", auth.ResetRequestView.as_view()),
+    path("api/auth/gmail/authorize/", auth.GmailAuthorizeView.as_view()),
+    path("api/auth/gmail/callback/", auth.GmailCallbackView.as_view()),
+    path("api/catalog/", api.CatalogView.as_view()),
+    path("api/schedule/", api.ScheduleView.as_view()),
+    path("api/my-schedules/", api.MySchedulesView.as_view()),
+    path("api/sessions/", api.SessionView.as_view()),
+    path("api/sessions/<uuid:session_id>/", api.SessionView.as_view()),
+    path("api/publish/", api.PublishView.as_view()),
+    path("api/patients/", api.PatientsView.as_view()),
+    path("api/patients/<int:patient_id>/", api.PatientView.as_view()),
+    path("api/patients/<int:patient_id>/ledger/", api.LedgerView.as_view()),
+    path("api/ledger/<uuid:entry_id>/reverse/", api.ReverseView.as_view()),
+    path("api/finance/", api.FinanceView.as_view()),
+    path("api/frequency/", api.FrequencyView.as_view()),
+    path("api/history/", api.HistoryView.as_view()),
+    path("api/notifications/", api.NotificationsView.as_view()),
+    path("api/staff/", api.StaffView.as_view()),
+    path("api/staff/<int:user_id>/", api.StaffView.as_view()),
+    path("api/staff/<int:user_id>/reset/", api.StaffResetView.as_view()),
+    path("api/audit/", api.AuditView.as_view()),
+    path("api/sync/", api.SyncView.as_view()),
+]
