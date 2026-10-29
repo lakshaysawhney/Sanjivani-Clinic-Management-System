@@ -2,7 +2,7 @@
 
 ## Phase 0A bounded baseline checks, 2026-10-29 (Asia/Kolkata)
 
-Verdict: **unverified baseline; not a completed MVP; not ready for clinic use**. The application/source checks below apply to the unchanged implementation preserved by the forthcoming Phase 0A checkpoint on `feat/1-initial-mvp` (parent `f08921f`). The actual checkpoint SHA, draft PR and CI evidence will be added after publication. Local source preservation comparison: 61 implementation files checked, zero changed/missing.
+Verdict: **unverified baseline; not a completed MVP; not ready for clinic use**. The application/source checks below apply to the unchanged implementation preserved by Phase 0A checkpoint `9af1ee287807f13d04f517cc179e0d20f64d67db` on [feat/1-initial-mvp](https://github.com/lakshaysawhney/Sanjivani-Clinic-Management-System/tree/feat/1-initial-mvp) (parent `f08921f`). [Draft PR #15](https://github.com/lakshaysawhney/Sanjivani-Clinic-Management-System/pull/15) is open against main, unmerged; parent #1 remains open. Documentation-only publication follow-up does not change the application under test. Local source preservation comparison: 61 implementation files checked, zero changed/missing.
 
 Environment: Windows PowerShell, Python 3.13.3, Node 22.15.0, npm 10.9.2; existing installed dependencies. No install, migration application, seed or external service provisioning. Commands used synthetic `DEBUG=1` settings, a nonproduction secret, accounting start `2026-10-01`, empty Gmail/OAuth/encryption/maintenance/proxy credentials and local app origin. Database target was verified loopback port 5433 with `connect_timeout=3`; pytest targeted newly named disposable `test_clinic_phase0a_20261029`. No private development wrapper or cloud/pilot/production database was used for these tests.
 
@@ -13,7 +13,7 @@ Environment: Windows PowerShell, Python 3.13.3, Node 22.15.0, npm 10.9.2; existi
 | `python manage.py check` (backend, virtualenv interpreter) | 0; no issues, 0 silenced | Not authorization/accounting acceptance |
 | `python manage.py makemigrations --check --dry-run` (backend) | 0; no changes detected, with RuntimeWarning | Database migration-history consistency check failed: connection timeout; not a complete migration validation |
 | `python -m pytest --collect-only -q` (backend) | 0; 48 tests collected in 2.44 s | Collection only, not test passes |
-| `python -m pytest -q --maxfail=1 --tb=short --junitxml=<ignored private report>` (backend) | 1; 1 setup error, 1 warning, 0 passed; stopped in 7.61 s (9.75 s process wall time) | `test_booking_conflicts_and_cancellation` never reached assertions; `django.db.utils.OperationalError: connection timeout expired` during disposable DB setup. Remaining 47 cases unexecuted. Six historical cached failures remain unreproduced |
+| `python -m pytest -q --maxfail=1 --tb=short --junitxml=<ignored private report>` (backend) | 1; 1 setup error, 1 warning, 0 passed; stopped in 7.61 s (9.75 s process wall time) | `test_booking_conflicts_and_cancellation` never reached assertions; `django.db.utils.OperationalError: connection timeout expired` during disposable DB setup. Remaining 47 cases unexecuted. Six historical failures were reproduced separately in remote CI below |
 | `npm.cmd run check` (frontend) | 0; TypeScript and UI copy passed | 38.09 s process wall time; copy scanner scope is limited |
 | `npm.cmd run build` (frontend) | 0; Vite 7.3.7, 1696 modules transformed | 42.97 s process wall time; client JS 380.66 kB, CSS 16.97 kB; no browser/deployed proof |
 | `npm.cmd run test:e2e -- --list` (frontend) | 0; six tests in one file | 9.72 s; zero scenarios executed, no visual acceptance |
@@ -30,11 +30,33 @@ Initial sandbox DB attempts failed with Windows socket permission error 10013. A
 - Scanned eligible content and the existing one-commit history for credentialed database URLs, private keys, provider token formats, JWT literals and nonsynthetic email literals. Compared against 29 local private contact/name/configuration terms without printing them, and scanned freshly built client assets. No unresolved findings. Two reviewed overlaps were public catalog text and the documented synthetic local database example.
 - Synthetic test credentials and loopback-only database examples in `.env.example`, compose and CI were reviewed as nonproduction fixtures. Runtime bootstrap has no shared default password; new accounts use unusable passwords and activation.
 - `.private/`, all real `.env` variants, dependency/cache/build/test-output directories and database dumps stay ignored. Added credential-container, SQL/archive and TypeScript metadata exclusions without deleting existing files. `.env.example` alone remains eligible as a placeholder template.
-- The existing `scripts/check_public.py` is a narrow tracked-file guard, not the whole audit; staged-tree check, ignore verification, source preservation and final history scan will be recorded after staging/publication. No production security certification or complete dependency/provenance review is claimed. Remaining security/CI evidence is tracked in #4/#10.
+- The existing `scripts/check_public.py` is a narrow tracked-file guard, not the whole audit; final index validation passed for 86 staged files, 13 ignore sentinels, 61 unchanged implementation files, 1,156 unique mapped clauses and 19 Markdown files/1,201 relative links. `git diff --cached --check` passed after correcting one added-document EOF blank line; the tracked-source guard passed. A post-checkpoint history scan checked 87 file revisions with zero findings. No production security certification or complete dependency/provenance review is claimed. Remaining security/CI evidence is tracked in #4/#10.
+
+Final documentation follow-up validation also passed: 86 indexed files, 61 unchanged implementation files, 1,156 unique clause mappings, 19 Markdown files, 1,202 relative links and 13 ignore sentinels. No private/generated entries were indexed; application files match the checkpoint exactly.
 
 ## Publication and next work
 
-Checkpoint/push/draft PR and remote CI are pending at this precommit snapshot. Parent #1 is intentionally not closed; final merge requires explicit owner approval. [Backlog](backlog.md) covers all six retained failures and C01-C08. Recommended next: [Phase 0B / #2](https://github.com/lakshaysawhney/Sanjivani-Clinic-Management-System/issues/2), with an available disposable PostgreSQL database and retained full-run evidence. No future issue is implemented by this checkpoint.
+Checkpoint `9af1ee287807f13d04f517cc179e0d20f64d67db` was committed and pushed; [draft PR #15](https://github.com/lakshaysawhney/Sanjivani-Clinic-Management-System/pull/15) targets main. Remote main is unchanged at `f08921f2fd8866058dee81eb94c53f017be125f4`. The working tree was clean immediately after checkpoint/push; publication evidence is a subsequent documentation-only commit. [CI run 40898371225](https://github.com/lakshaysawhney/Sanjivani-Clinic-Management-System/actions/runs/40898371225) completed with failure; exact job evidence is recorded below. A documentation-only follow-up does not alter the tested application, and its automatic CI status must be inspected separately rather than inferred from this run. Parent #1 is intentionally not closed; final merge requires explicit owner approval. [Backlog](backlog.md) covers all six retained failures and C01-C08. Recommended next: [Phase 0B / #2](https://github.com/lakshaysawhney/Sanjivani-Clinic-Management-System/issues/2), with an available disposable PostgreSQL database and retained full-run evidence. No future issue is implemented by this checkpoint.
+
+## Checkpoint CI: complete backend run, failed
+
+[Clinic verification run 40898371225](https://github.com/lakshaysawhney/Sanjivani-Clinic-Management-System/actions/runs/40898371225), job [123533600467](https://github.com/lakshaysawhney/Sanjivani-Clinic-Management-System/actions/runs/40898371225/job/123533600467), tested checkpoint `9af1ee287807f13d04f517cc179e0d20f64d67db` for draft PR #15. Ubuntu runner, CPython 3.13.17, disposable PostgreSQL 17.11 with synthetic CI configuration; no private roster or production credentials. Completed 2026-10-29 at approximately 20:38 IST.
+
+- Dependency installation, backend lint, formatting and migration dry-run passed.
+- `pytest -q`: **6 failed, 42 passed, 12 warnings in 27.19 s**, exit 1. All six retained historical failures are now reproduced on a committed revision. This supersedes the earlier lack of trusted counts/tracebacks; local setup remained blocked independently.
+- The 12 warnings report missing `backend/staticfiles/` in the test environment. No browser/visual acceptance follows from backend passes.
+- Workflow stopped at pytest. Node setup, npm install/check/build, public-source guard, development schema/seed and Playwright install/scenarios were **skipped**, not passed. Local frontend checks/audit remain separate evidence.
+
+| Reproduced failing test | Observed failure at this revision | Follow-up |
+|---|---|---|
+| `test_group_attendance_and_billing` | HTTP 403 where 200 expected in history API assertion | #2/#3; inspect API/proxy test boundary |
+| `test_correction_reversal_and_fee_snapshot` | `IntegrityError`: duplicate key violates `clinic_ledgerentry_reverses_id_key` while creating a charge reversal | #2/#3; diagnose reversal/snapshot history |
+| `test_publication_ownership_expiry_and_payload` | HTTP 403 where 200 expected | #2/#5; preserve C01-C03 policy questions |
+| `test_frequency_and_dues` | `AttributeError`: `JsonResponse` has no attribute `data`, after forbidden API response | #2/#6; distinct from untested C07 boundary |
+| `test_idempotency_and_staff_boundaries` | Session mutation returned HTTP 403 where 200 expected | #2/#4 |
+| `test_csrf_and_deactivation` | `AttributeError`: `JsonResponse` has no attribute `data` for forbidden CSRF response | #2/#4 |
+
+These are observed symptoms, not final root-cause diagnoses or authorization to weaken runtime security. No application fixes were made. Full CI job output is also retained locally in ignored `.private/phase0a/ci-checkpoint.txt`; only the above sanitized trace summary is committed. Passing the remaining 42 tests does not complete the original acceptance inventory. Phase 0B is #2.
 
 ## Historical verification before Phase 0A
 
