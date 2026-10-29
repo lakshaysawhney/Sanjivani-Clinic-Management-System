@@ -2,6 +2,8 @@
 
 ## Authority
 
+Phase 0B / issue #2 now authorizes focused backend stabilization on the existing `feat/1-initial-mvp` branch, updates to Draft PR #15, disposable PostgreSQL verification and main-only GitHub protection. It does not authorize a main merge, deployment, real-data operation or unrelated MVP work. The Phase 0A authorization below is historical.
+
 Latest user scope controls the current issue. Phase 0A authorizes baseline inspection, public-source audit, bounded checks, branch rename, checkpoint publication, a draft PR and prioritized issues. Future implementation proceeds incrementally; no unrelated fixes or deployment are authorized by baseline preservation. The original complete product scope remains mandatory. The Final Deployment Requirement Update overrides conflicting master hosting/scheduler instructions. Complete sanitized sources and clause coverage are retained under sources/ and requirements-coverage.md. Code is implementation evidence, not authority to change a business rule.
 
 ## Finalized product decisions
@@ -33,6 +35,7 @@ Latest user scope controls the current issue. Phase 0A authorizes baseline inspe
 - Same-therapy restoration reuses the snapshot; category changes capture that category's fee at correction time. Test this documented interpretation.
 - Neon Singapore was selected after Mumbai was unavailable for the account. This does not establish real-data hosting/legal suitability.
 - Ambiguous email sends use uncertain/sending states rather than blind duplication. Complete investigation/recovery/alert handling remains incomplete.
+- Phase 0B retains proxy enforcement in production and tests the trusted header explicitly; test-only hashing never changes runtime authentication. Ledger correction lineage is determined by the unreversed charge, not timestamp ordering. No business policy changed: immutable original/reversal entries, existing locks, source-key idempotency and per-child group billing remain mandatory.
 
 ## Open conflicts and static audit findings
 
@@ -44,7 +47,7 @@ Latest user scope controls the current issue. Phase 0A authorizes baseline inspe
 | C04 | Earlier conversation claimed Windows browser launcher corrected. Current file still has slash-based relative executable syntax; Phase 0A isolated executable probe reproduced the Windows failure. | Repository controls current status. Tracked in #7; no application change during baseline preservation. |
 | C05 | No dynamic unresolved header notification indicator found; navigation/page alone does not prove §16.6. Pending-change indication, list controls and visual cases remain incomplete/unverified. | Explicit UI acceptance backlog after backend stabilization. |
 | C06 | Removed children remain cancelled, serializer returns all participations. Ordinary child replacement may produce several children on re-edit; date/category edits may alter retained cancellation reporting. | Static concern requiring meaningful regression tests, not a reproduced failure. |
-| C07 | Frequency API checks Monday against history floor, potentially denying a permitted month-boundary week. All six cached backend failures were reproduced in Phase 0A PostgreSQL CI (42 passed, 6 failed). | Trace summaries are in verification.md and issues #2-#6; diagnose before fixing, and test C07 separately. |
+| C07 | Frequency API checks Monday against history floor, potentially denying a permitted month-boundary week. Phase 0B resolved the baseline frequency/dues test failure as missing trusted-proxy test configuration; it did not exercise or change this separate boundary concern. | Keep #6 open for month-boundary acceptance. Current backend run and baseline root causes are in verification.md. |
 | C08 | Session lifetime is hardcoded at approximately 30 days instead of configurable; operational delivery recovery/alerts, some table controls and full original test coverage are incomplete. | Keep explicit coverage gaps; no silent waiver. |
 
 ## Process override and final delivery
