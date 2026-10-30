@@ -1,5 +1,50 @@
 # Verification evidence and failure register
 
+## Issue #3 completion, 2026-10-30 (Asia/Kolkata)
+
+Scope: [issue #3](https://github.com/lakshaysawhney/Sanjivani-Clinic-Management-System/issues/3), on `feat/1-initial-mvp`, source commit `8a7643c18e5a512a1326c6708f994c1892948113`, updating [Draft PR #15](https://github.com/lakshaysawhney/Sanjivani-Clinic-Management-System/pull/15). No merge or deployment. Clinic-use readiness remains **not ready**; an isolated synthetic local manual pilot is separately authorized by the owner's 2026-10-30 continuation.
+
+### Confirmed defects and fixes
+
+| Reproduced behavior | Focused correction |
+|---|---|
+| Ordinary replacement returned both the retired and current child; reopening could violate ordinary cardinality | Track retired membership separately and serialize only current members into editable appointments |
+| Removing/cancelling a child then moving/reassigning/changing therapy rewrote the original cancellation context/month | Store original date/slot/category/providers/end time and indexed attendance date; use them for daily/patient history and monthly cancellation reporting |
+| Equal-price category changes left the old charge active | Reverse and replace the current charge on category change even when the amount is equal |
+| Moving a completed session left its live charge at the old effective end time | Append reversal and replacement at the corrected end, retaining historical fee snapshots |
+| Reception could restore an older cancellation after its cutoff by using a future appointment shell | Check the original cancellation date as well as the existing and destination session dates; admin retains retrospective access |
+| Frozen cancellation slots were displayed in insertion order after moves | Sort patient history by its serialized original date/slot |
+
+The first three pre-fix regressions failed with `[original, replacement]` instead of one editable child, zero instead of one cancellation in the original month, and no category reversal. The next two failed on missing effective-time reversal and missing cutoff denial. The final interrupted chronology test was executed on resumption and failed with slots `[2, 1]` rather than `[1, 2]` before the fix. No original test was weakened or removed.
+
+### Executed local checks
+
+Windows PowerShell, Python 3.13.3, Node 22.15.0, installed dependencies, PostgreSQL 17 in the retained loopback-only `clinic-phase0b-postgres` container on port 55432. Configuration is explicit and synthetic, never loaded from private development or cloud/pilot credentials. Disposable pytest target: `test_clinic_phase0b_regressions`; separate browser databases were created for the 2026-10-29/30 runs. Only disposable data was migrated. Reports, temporary configs and browser traces remain ignored under `.private/` or `frontend/test-results/`.
+
+| Command / stage | Actual evidence |
+|---|---|
+| Focused pre-fix history/category regressions | 3 failed, 1 warning in 2.56 s; all three passed after fixes |
+| Additional pre-fix move/cutoff regressions | 2 failed in 32.60 s |
+| Interrupted chronology regression on 2026-10-30 | 1 failed, 22 deselected, 1 warning in 3.33 s before sorting fix |
+| `.venv/Scripts/python .private/phase0b/run_checks.py -m pytest -q --tb=short --junitxml=<ignored report>` | Final complete run: **84 passed, 0 failed, 34 warnings in 82.63 s**. Previous complete runs: 80/80 in 220.69 s and 83/83 in 285.30 s. The final run includes all 60 stabilized cases plus 24 new cases |
+| `.venv/Scripts/python -m ruff check backend scripts`; `ruff format --check backend scripts` | Passed; 40 files formatted. One unformatted newly interrupted test line was corrected before final verification |
+| Disposable-config `manage.py check`; `manage.py makemigrations --check --dry-run` | No issues (0 silenced); no changes detected |
+| `npm.cmd run check`; `npm.cmd run build` in frontend | TypeScript/copy passed; Vite production build passed, 1,696 modules, JS 380.71 kB/CSS 16.97 kB |
+| Existing Playwright config via portable local launcher | **6 passed, 2 failed in 1.6 min**. Both failures were the 5-second login-heading expectation; server logs show successful login responses. Both laptop sizes and mobile isolation passed in this run |
+| Local-only 15-second expectation diagnostic rerun | **3 passed, 5 failed in 7.2 min**: four login-heading waits and one missing Published result. Server logs show successful login responses; the local machine had only about 454 MiB available memory during the run. This does not establish the publication failure root cause. No scenario assertion, repository config or CI timeout was changed |
+| `python scripts/check_public.py`; `git diff --check`; clause/link validation | Public tracked-source guard and whitespace checks passed. 1,156 unique clause IDs preserved; 48 targeted rows updated with scoped PostgreSQL evidence. New public changes were inspected for identities/credentials/private/generated data; local secrets and test output remain ignored |
+
+The 34 backend warnings concern absent test `backend/staticfiles/`; they are retained, not suppressed. The legacy migration test actually moves from schema 0002 to 0003 and verifies stored cancellation context, retired ordinary membership and unchanged ledger rows. The new concurrent ordinary/group cases use separate PostgreSQL connections for stale versions, simultaneous payments and identical mutation retries. Reservation conflicts roll back both membership and accounting. Group totals count once per participating provider and once per completed child, with one appropriate charge per child; cancelled children do not bill.
+
+Docker Desktop initially failed on a stale IPC socket after restart. A normal startup retry recovered server 29.8.1; an attempted removal of the zero-byte endpoint failed and no Docker reset, database/volume deletion or configuration change occurred. The previous automatic approval interruption was a usage-limit review failure, not a business-test failure. The separate Windows launcher issue #7 is preserved; the ignored portable runner uses explicit local settings and leaves repository launcher code untouched.
+
+### CI and review
+
+[Green GitHub Actions run 41062087073](https://github.com/lakshaysawhney/Sanjivani-Clinic-Management-System/actions/runs/41062087073), job `124084083575`, verified the source commit above on Ubuntu/Python 3.13/PostgreSQL 17: **84 backend cases, 34 warnings in 8.35 s; all 8 browser scenarios in 16.2 s**. All job steps passed: backend lint/format/system/migration checks, frontend type/copy/build, tracked-source guard, disposable migration/seed and Chromium scenarios. CI retained the existing five-second browser expectations. Local timing failures are not relabeled as passes.
+
+Read-only review of the issue diff checked correction lineage, actor/cutoff enforcement, frozen history, reservation rollback, migration limits, role-scoped payloads and test preservation. No remaining confirmed issue #3 code defect was identified. This is a self-review; owner review/merge remains pending. The PR stays draft and unmerged. C06 is addressed for subsequent writes; already-overwritten legacy context and ambiguous old removed membership cannot be reconstructed automatically and require private owner review before any operational migration. Remaining C01-C05/C07-C08, full original acceptance, deployed security, email, backups and production launch are outside this issue. The latest owner request proceeds only to a synthetic local manual environment, then stops.
+
+
 ## Phase 0B: PostgreSQL stabilization, 2026-10-29 (Asia/Kolkata)
 
 Scope is [#2](https://github.com/lakshaysawhney/Sanjivani-Clinic-Management-System/issues/2) on `feat/1-initial-mvp`, updating [Draft PR #15](https://github.com/lakshaysawhney/Sanjivani-Clinic-Management-System/pull/15). Complete clinic acceptance remains **not ready**. The Phase 0A results below are historical and are not the current backend verdict.

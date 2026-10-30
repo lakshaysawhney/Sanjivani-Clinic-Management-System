@@ -2,7 +2,7 @@
 
 ## Authority
 
-Phase 0B / issue #2 now authorizes focused backend stabilization on the existing `feat/1-initial-mvp` branch, updates to Draft PR #15, disposable PostgreSQL verification and main-only GitHub protection. It does not authorize a main merge, deployment, real-data operation or unrelated MVP work. The Phase 0A authorization below is historical.
+Issue #3 authorizes the participation/financial correctness audit, confirmed fixes, focused PostgreSQL/browser regressions, full checks, documentation and Draft PR #15 updates on `feat/1-initial-mvp`. The 2026-10-30 continuation also authorizes an isolated synthetic local manual pilot after issue verification, with role-specific random test credentials stored only under ignored `.private/`, local servers, sample schedules/payments and restart instructions. This does not authorize another backlog issue or real data/email. It does not authorize a main merge, deployment, operational migration or unrelated development. Phase 0A/0B authorizations below are historical.
 
 Latest user scope controls the current issue. Phase 0A authorizes baseline inspection, public-source audit, bounded checks, branch rename, checkpoint publication, a draft PR and prioritized issues. Future implementation proceeds incrementally; no unrelated fixes or deployment are authorized by baseline preservation. The original complete product scope remains mandatory. The Final Deployment Requirement Update overrides conflicting master hosting/scheduler instructions. Complete sanitized sources and clause coverage are retained under sources/ and requirements-coverage.md. Code is implementation evidence, not authority to change a business rule.
 
@@ -37,6 +37,13 @@ Latest user scope controls the current issue. Phase 0A authorizes baseline inspe
 - Ambiguous email sends use uncertain/sending states rather than blind duplication. Complete investigation/recovery/alert handling remains incomplete.
 - Phase 0B retains proxy enforcement in production and tests the trusted header explicitly; test-only hashing never changes runtime authentication. Ledger correction lineage is determined by the unreversed charge, not timestamp ordering. No business policy changed: immutable original/reversal entries, existing locks, source-key idempotency and per-child group billing remain mandatory.
 
+## Issue #3 implementation decisions
+
+- Cancellation is the child's current attendance outcome, not an additional billable event. A retired member stays Cancelled with the original date, slot, therapy label/code, provider IDs and end time. Removing a child while simultaneously moving/reassigning the appointment captures the pre-edit context. A newly added cancelled child uses the new context. Repeated edits do not move an existing cancellation.
+- Explicit restoration reuses the same participation and fee snapshot and clears its cancellation outcome; monthly cancellation and completion counts reconcile rather than counting both. Reception must be allowed to edit both the current shell date and the original cancellation date. Admin retains retrospective access. Existing reservation constraints still reject conflicting restoration atomically.
+- Equal-price category changes and completed time/date moves reverse the current charge and append a replacement at the corrected effective time. Amount equality cannot conceal a different accounting category or event time. Same-category restoration keeps the captured historical fee; category changes capture that category's current fee.
+- The schema backfill preserves the best available stored legacy shell without modifying ledger/audit rows. It cannot recover context already lost before the fix, or reliably infer every prior removed member. No arbitrary historical identity/date is invented. Review any ambiguous legacy records privately before an operational migration; this task migrates synthetic disposable databases only.
+
 ## Open conflicts and static audit findings
 
 | ID | Finding | Next treatment |
@@ -46,7 +53,7 @@ Latest user scope controls the current issue. Phase 0A authorizes baseline inspe
 | C03 | `publish` calls appointment `editable`, potentially forbidding reception from publishing today's schedule after 18:00. Original cutoff explicitly concerns appointment corrections. | Review this coupling; do not treat it as a finalized publication restriction. |
 | C04 | Earlier conversation claimed Windows browser launcher corrected. Current file still has slash-based relative executable syntax; Phase 0A isolated executable probe reproduced the Windows failure. | Repository controls current status. Tracked in #7; no application change during baseline preservation. |
 | C05 | No dynamic unresolved header notification indicator found; navigation/page alone does not prove §16.6. Pending-change indication, list controls and visual cases remain incomplete/unverified. | Explicit UI acceptance backlog after backend stabilization. |
-| C06 | Removed children remain cancelled, serializer returns all participations. Ordinary child replacement may produce several children on re-edit; date/category edits may alter retained cancellation reporting. | Static concern requiring meaningful regression tests, not a reproduced failure. |
+| C06 | Issue #3 reproduced ordinary replacement/re-edit and mutable cancellation context defects. | Fixed for subsequent writes with explicit retired membership, stored original cancellation context and attendance-date reporting; PostgreSQL and browser evidence is in verification.md. Legacy context already overwritten cannot be reconstructed, and ambiguous old membership needs review before operational migration. |
 | C07 | Frequency API checks Monday against history floor, potentially denying a permitted month-boundary week. Phase 0B resolved the baseline frequency/dues test failure as missing trusted-proxy test configuration; it did not exercise or change this separate boundary concern. | Keep #6 open for month-boundary acceptance. Current backend run and baseline root causes are in verification.md. |
 | C08 | Session lifetime is hardcoded at approximately 30 days instead of configurable; operational delivery recovery/alerts, some table controls and full original test coverage are incomplete. | Keep explicit coverage gaps; no silent waiver. |
 

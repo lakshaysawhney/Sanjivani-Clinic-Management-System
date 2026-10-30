@@ -1,6 +1,6 @@
 # Project handoff index
 
-Phase 0B backend stabilization and main-branch protection (2026-10-29) is the current scoped work in issue #2 and Draft PR #15. Read [progress](progress.md) and [verification](verification.md) for current PostgreSQL, GitHub and check evidence, and the [prioritized issue backlog](backlog.md) for remaining work. The consolidation notes below describe the earlier documentation-only handoff. Product readiness remains **not ready**.
+Issue #3 participation history and financial correctness (2026-10-29) is the current scoped work on `feat/1-initial-mvp` and Draft PR #15, following completed Phase 0B stabilization. Read [progress](progress.md) and [verification](verification.md) for current PostgreSQL, GitHub and check evidence, and the [prioritized issue backlog](backlog.md) for remaining work. The consolidation notes below describe the earlier documentation-only handoff. Product readiness remains **not ready**.
 
 Consolidated 2026-10-29 (Asia/Kolkata). This is documentation-only context preservation, without application fixes, test reruns, deployment, merge or database operations.
 

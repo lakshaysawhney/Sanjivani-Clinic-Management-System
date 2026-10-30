@@ -11,3 +11,5 @@ Reception editing closes exactly 18:00 on the session date. Tomorrow remains edi
 Publication applies to the day. Material changes create generic outbox notifications for both removed and newly assigned providers. No-op saves create no notification. Published state survives edits. Expired daily views are distinct from the permitted completed-history views.
 
 Private provisioning supplies the requested provider display order; public fixtures use eleven synthetic provider names. Two tables show the first six and remaining five positions consistently across dates.
+
+Issue #3 separates current editable membership from retired cancelled participants. Retired children do not reappear as extra children on ordinary re-edit. Cancellation history freezes the original date, slot, therapy and providers, including when removal and a move happen in one save; monthly reports and the non-blocking daily history use that context. Explicit restoration reuses the participation, supersedes its cancellation count and checks reception access to its original date as well as the current session date. Legacy overwritten context cannot be recovered by the backfill.

@@ -40,4 +40,4 @@ Static frontend must remain available while the free backend sleeps. Browser coo
 
 Prior work created a Neon free pilot branch and separate cloud development branch in Singapore; local development was later switched to Docker PostgreSQL. Tests use a dedicated disposable test database. Private local wrappers load ignored configuration; fresh agents must inspect targets safely. Never test against pilot/production or infer availability from stored credentials.
 
-Production scheduler and encrypted external backups are required architecture deliverables, not completed integrations. The paid upgrade is separate from go-live approval and does not itself schedule maintenance. All eight open concerns in decisions.md must remain visible until resolved in scoped issues.
+Production scheduler and encrypted external backups are required architecture deliverables, not completed integrations. The paid upgrade is separate from go-live approval and does not itself schedule maintenance. Concerns in decisions.md remain visible until resolved in scoped issues; issue #3 addresses C06 for subsequent writes and records the legacy backfill limit.
