@@ -25,6 +25,7 @@ from .models import (
     AuditLog,
     EmailOutbox,
     IdempotencyRecord,
+    Participation,
 )
 from .time_rules import STARTS, now, month_floor, history_scope
 from .scheduling import reconcile, save_session, publish, publication_reminder, therapist_visible
@@ -74,7 +75,7 @@ def patient_data(patient, on=None):
 
 def session_data(session, user):
     parts = []
-    for part in session.participations.select_related("patient"):
+    for part in session.participations.filter(removed=False).select_related("patient"):
         item = {
             "id": part.pk,
             "patient_id": part.patient_id,
@@ -95,6 +96,18 @@ def session_data(session, user):
         "participants": parts,
         "ends_at": session.ends_at.isoformat(),
     }
+
+
+def participation_history(part, user):
+    """Cancellation reporting uses frozen context, never the edited session shell."""
+    data = session_data(part.session, user)
+    if part.status == "Cancelled" and part.cancelled_context:
+        data.update(part.cancelled_context)
+    data["participants"] = [
+        {"id": part.pk, "patient_id": part.patient_id, "name": part.patient.name, "status": part.status}
+    ]
+    data["patient_status"] = part.status
+    return data
 
 
 def ledger_data(entry):
@@ -192,13 +205,19 @@ class ScheduleView(ClinicView):
             sessions = sessions.filter(assignments__provider__user=request.user)
         else:
             history_scope(request.user, day)
-        return Response(
-            {
-                "date": str(day),
-                "published": bool(schedule and schedule.published_at),
-                "sessions": [session_data(s, request.user) for s in sessions],
-            }
-        )
+        data = {
+            "date": str(day),
+            "published": bool(schedule and schedule.published_at),
+            "sessions": [session_data(s, request.user) for s in sessions],
+        }
+        if request.user.role != "THERAPIST":
+            data["cancelled_history"] = [
+                participation_history(p, request.user)
+                for p in Participation.objects.filter(status="Cancelled", attendance_date=day)
+                .select_related("session__schedule", "session__therapy", "patient")
+                .order_by("pk")
+            ]
+        return Response(data)
 
 
 class MySchedulesView(ClinicView):
@@ -318,7 +337,7 @@ class PatientView(ClinicView):
         patient = get_object_or_404(Patient, pk=patient_id)
         start, end = selected_month(request)
         parts = patient.participations.filter(
-            session__schedule__date__gte=start, session__schedule__date__lt=end
+            attendance_date__gte=start, attendance_date__lt=end
         ).select_related("session__therapy", "session__schedule")
         done = parts.filter(status="Completed")
         categories = {t.code: 0 for t in Therapy.objects.all()}
@@ -342,10 +361,12 @@ class PatientView(ClinicView):
                 "plans": list(
                     patient.plans.order_by("-effective_date").values("weekly", "monthly", "effective_date")
                 ),
-                "history": [
-                    {**session_data(p.session, request.user), "patient_status": p.status}
-                    for p in parts.order_by("session__schedule__date", "session__slot")
-                ],
+                # Cancellation slots come from frozen context, so ordering by
+                # the mutable session slot would put moved records out of order.
+                "history": sorted(
+                    (participation_history(p, request.user) for p in parts.order_by("pk")),
+                    key=lambda item: (item["date"], item["slot"]),
+                ),
             }
         )
 
@@ -409,7 +430,7 @@ class FrequencyView(ClinicView):
             "name"
         ):
             parts = patient.participations
-            monthly = parts.filter(session__schedule__date__gte=start, session__schedule__date__lt=end)
+            monthly = parts.filter(attendance_date__gte=start, attendance_date__lt=end)
             rows.append(
                 {
                     **patient_data(patient, end - timedelta(days=1)),

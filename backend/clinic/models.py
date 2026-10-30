@@ -68,6 +68,10 @@ class Participation(models.Model):
     session = models.ForeignKey(Session, on_delete=models.PROTECT, related_name="participations")
     patient = models.ForeignKey(Patient, on_delete=models.PROTECT, related_name="participations")
     status = models.CharField(max_length=12, choices=Status.choices, default=Status.SCHEDULED)
+    # Retired membership is history, not an extra child in the editable booking.
+    removed = models.BooleanField(default=False)
+    attendance_date = models.DateField(db_index=True)
+    cancelled_context = models.JSONField(null=True)
     fee_snapshot = models.PositiveIntegerField(null=True)
     fee_therapy = models.ForeignKey(Therapy, null=True, on_delete=models.PROTECT)
     billing_revision = models.PositiveIntegerField(default=0)
@@ -76,6 +80,9 @@ class Participation(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["session", "patient"], name="one_participation"),
+            models.CheckConstraint(
+                condition=Q(removed=False) | Q(status="Cancelled"), name="removed_participation_cancelled"
+            ),
             models.CheckConstraint(
                 condition=Q(status__in=["Scheduled", "Completed", "Cancelled"]),
                 name="valid_participation_status",

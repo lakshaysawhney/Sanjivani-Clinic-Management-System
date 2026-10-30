@@ -28,18 +28,23 @@ def reconcile_charge(part, actor=None):
     Provider count never multiplies the charge for a completed child.
     """
     desired = 0
+    category_changed = part.fee_therapy_id != part.session.therapy_id
     if part.status == "Completed" and str(part.session.schedule.date) >= settings.ACCOUNTING_START_DATE:
         if part.fee_snapshot is None or part.fee_therapy_id != part.session.therapy_id:
             part.fee_snapshot = part.session.therapy.fee_paise
             part.fee_therapy = part.session.therapy
         desired = part.fee_snapshot
-    if desired != part.billed_paise:
+    original = None
+    if part.billed_paise:
+        # Timestamps can tie or move backwards. Follow the unreversed lineage.
+        original = LedgerEntry.objects.get(participation=part, kind="charge", reversal__isnull=True)
+    # Equal prices do not make distinct categories or effective times the same
+    # accounting event. Moving a completed session appends a corrected charge.
+    context_changed = category_changed or (original and original.effective_at != part.session.ends_at)
+    if desired != part.billed_paise or (desired and context_changed):
         part.billing_revision += 1
         prefix = f"participation:{part.pk}:{part.billing_revision}"
         if part.billed_paise:
-            # Timestamps can tie or move backwards. The unreversed charge is the
-            # accounting source of truth, independent of wall-clock/UUID order.
-            original = LedgerEntry.objects.get(participation=part, kind="charge", reversal__isnull=True)
             LedgerEntry.objects.create(
                 patient=part.patient,
                 amount_paise=part.billed_paise,

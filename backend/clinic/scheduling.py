@@ -27,7 +27,9 @@ def snapshot(session):
         "slot": session.slot,
         "therapy": session.therapy_id,
         "providers": sorted(session.assignments.values_list("provider_id", flat=True)),
-        "participants": list(session.participations.order_by("patient_id").values("patient_id", "status")),
+        "participants": list(
+            session.participations.order_by("patient_id").values("patient_id", "status", "removed")
+        ),
     }
 
 
@@ -77,6 +79,7 @@ def changed_emails(session, before, previous_published=False):
 @transaction.atomic
 def save_session(actor, data, session_id=None):
     before = {}
+    original_context = None
     old_published = False
     if session_id:
         session = Session.objects.select_for_update().select_related("schedule", "therapy").get(pk=session_id)
@@ -84,6 +87,8 @@ def save_session(actor, data, session_id=None):
         if data.get("version") != session.version:
             raise Conflict("This appointment changed. Refresh before saving.")
         before = snapshot(session)
+        original_context = {key: before[key] for key in ("date", "slot", "therapy", "providers")}
+        original_context.update(therapy_name=session.therapy.name, ends_at=session.ends_at.isoformat())
         old_published = bool(session.schedule.published_at)
     else:
         session = Session(created_by=actor)
@@ -130,8 +135,11 @@ def save_session(actor, data, session_id=None):
     Assignment.objects.filter(session=session).exclude(provider_id__in=provider_ids).delete()
     for provider in providers:
         Assignment.objects.get_or_create(session=session, provider=provider)
-    # Removed participants remain cancelled in history; no historical attendance is erased.
+    # Capture cancellation against the old shell before its date/category/providers
+    # change. Later saves cannot move a retired child's cancellation to a new month.
     for part in session.participations.exclude(patient_id__in=patient_ids):
+        retain_context(part, session, "Cancelled", original_context, actor)
+        part.removed = True
         part.status = "Cancelled"
         reconcile_charge(part, actor)
     for item in participant_data:
@@ -142,8 +150,12 @@ def save_session(actor, data, session_id=None):
             raise ValidationError("A future session cannot be completed early.")
         if status == "Scheduled" and session.ends_at <= timezone.now():
             status = "Completed"
-        part, _ = Participation.objects.get_or_create(session=session, patient_id=item["patient_id"])
+        part, created = Participation.objects.get_or_create(
+            session=session, patient_id=item["patient_id"], defaults={"attendance_date": day}
+        )
         part.session = session
+        retain_context(part, session, status, None if created else original_context, actor)
+        part.removed = False
         part.status = status
         reconcile_charge(part, actor)
     sync_reservations(session)
@@ -162,6 +174,33 @@ def save_session(actor, data, session_id=None):
         )
         changed_emails(session, before, old_published)
     return session
+
+
+def retain_context(part, session, status, original_context, actor):
+    """Keep one current attendance outcome; restoration supersedes cancellation.
+
+    A removed child retains the appointment context at cancellation. Explicitly
+    restoring that child reuses its participation and fee snapshot, and moves its
+    attendance to the corrected appointment rather than counting both outcomes.
+    """
+    if status == "Cancelled":
+        if part.cancelled_context is None:
+            part.cancelled_context = original_context or {
+                "date": str(session.schedule.date),
+                "slot": session.slot,
+                "therapy": session.therapy_id,
+                "therapy_name": session.therapy.name,
+                "providers": list(session.assignments.values_list("provider_id", flat=True)),
+                "ends_at": session.ends_at.isoformat(),
+            }
+        part.attendance_date = date.fromisoformat(part.cancelled_context["date"])
+    else:
+        if part.cancelled_context:
+            # Moving the shell into the future cannot reopen yesterday's closed
+            # cancellation to reception. Admin can correct either attendance date.
+            editable(actor, part.attendance_date)
+        part.cancelled_context = None
+        part.attendance_date = session.schedule.date
 
 
 @transaction.atomic

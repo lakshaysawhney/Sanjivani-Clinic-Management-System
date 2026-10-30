@@ -6,7 +6,7 @@ export interface Catalog {providers:Provider[]; therapies:Therapy[]; slots:strin
 export type Status = 'Scheduled'|'Completed'|'Cancelled'
 export interface Participant {id?:number; patient_id:number; name:string; status:Status; special_fee?:boolean}
 export interface Session {id:string; date:string; slot:number; therapy:string; therapy_name:string; providers:number[]; participants:Participant[]; version:number; ends_at:string; patient_status?:Status}
-export interface Schedule {date:string; published:boolean; sessions:Session[]}
+export interface Schedule {date:string; published:boolean; sessions:Session[]; cancelled_history:Session[]}
 export interface Patient {id:number; name:string; active:boolean; special_fee:boolean; weekly:number; monthly:number; balance_paise:number}
 export interface PatientDetails extends Patient {completed:number; cancelled:number; categories:Record<string,number>; providers:Record<string,number>; total_payments_paise:number; total_charges_paise:number; history:Session[]; plans:{weekly:number;monthly:number;effective_date:string}[]}
 export interface LedgerEntry {id:string; kind:string; amount_paise:number; description:string; effective_at:string; created_at:string; actor:string; reverses:string|null; reversed:boolean; running_balance_paise:number}
